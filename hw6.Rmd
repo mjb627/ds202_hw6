@@ -1,0 +1,35 @@
+---
+title: 'Michael Bardfield; mjb627'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width = 10, fig.height = 10)
+```
+#hw6
+```{r clean data}
+library(tidyverse)
+library(ggrepel)
+
+data <- readxl::read_xlsx('Dogs.xlsx', sheet = 'Best in show full sheet', skip = 2) # skip first 2 rows 
+
+dogs <- data[-c(1),] # delete the original 4th row of the dataset
+colnames(dogs)[names(dogs) == 'Sources - see bottom right'] <- 'Dog breed' # changed first column name
+colnames(dogs)[names(dogs) == 'POPULARITY IN US..6'] <- 'Popularity in US 1-173' # changed name of columns to specify differences
+colnames(dogs)[names(dogs) == 'POPULARITY IN US..7'] <- 'Popularity in US with datadog score'
+
+dogs[,6:7] <- sapply(dogs[,6:7], as.numeric) # changed popularity scores from chr to double
+
+table(dogs$`intelligence category`)
+dogs[dogs == 'Excellent' | dogs == 'Brightest' | dogs == 'Above average'] <- 'Clever' # changed higher intelligence categories to clever
+dogs[dogs == 'Average' | dogs == 'Fair' | dogs == 'Lowest'] <- 'Dumb' # changed lower intelligence categories to dumb
+
+
+head(dogs)
+```
+
+```{r}
+graphic <- dogs %>% ggplot(aes(x=`datadog score`, y=`Popularity in US 1-173`)) + geom_point(aes(shape = `intelligence category`)) + xlab('Data Score') + ylab('Popularity') + scale_y_reverse() + xlim(.75,4) + ylim(160,-5) 
+graphic + scale_color_brewer(palette = 'Set2') + geom_text_repel(aes(label = `Dog breed`, color=`category`), size = 3.2)
+
+```
